@@ -10,7 +10,7 @@ import { getDomain } from 'cross-domain-utils/src';
 
 import { config } from '../config';
 import { SOURCE, ENV, FPTI, FUNDING, BUTTON_LABEL, BUTTON_COLOR,
-    BUTTON_SIZE, BUTTON_SHAPE, BUTTON_LAYOUT, COUNTRY, ALTERNATE_PAYMENT_METHOD } from '../constants';
+    BUTTON_SIZE, BUTTON_SHAPE, BUTTON_LAYOUT, COUNTRY } from '../constants';
 import { redirect as redir, checkRecognizedBrowser,
     getBrowserLocale, getSessionID, request, getScriptVersion,
     isIEIntranet, isEligible,
@@ -74,24 +74,6 @@ function isCreditDualEligible(props) : boolean {
     }
 
     return true;
-}
-
-function determineAPMBlacklist (allowed, disallowed) : Object {
-    Object.getOwnPropertyNames(ALTERNATE_PAYMENT_METHOD).forEach(apm => {
-        let funding = ALTERNATE_PAYMENT_METHOD[apm];
-        if (getDomainSetting(`disable_${ funding }`)) {
-            if (allowed && allowed.indexOf(funding) !== -1) {
-                allowed.splice(allowed.indexOf(funding), 1);
-            }
-            if (disallowed && disallowed.indexOf(funding) === -1) {
-                disallowed.push(funding);
-            }
-        }
-    });
-    return {
-        allowed,
-        disallowed
-    };
 }
 
 let creditThrottle;
@@ -434,13 +416,6 @@ export let Button : Component<ButtonOptions> = create({
             },
             decorate({ allowed = [], disallowed = [] } : Object = {}, props : ButtonOptions) : {} {
 
-                if (allowed && allowed.indexOf(FUNDING.IDEAL) !== -1) {
-                    allowed.splice(allowed.indexOf(FUNDING.IDEAL), 1);
-                }
-                if (disallowed && disallowed.indexOf(FUNDING.IDEAL) === -1) {
-                    disallowed.push(FUNDING.IDEAL);
-                }
-
                 if (allowed && allowed.indexOf(FUNDING.VENMO) !== -1 && !isDevice()) {
                     allowed = allowed.filter(source => (source !== FUNDING.VENMO));
                 }
@@ -464,8 +439,6 @@ export let Button : Component<ButtonOptions> = create({
                         disallowed = [ ...disallowed, FUNDING.VENMO ];
                     }
                 }
-
-                ({ allowed, disallowed } = determineAPMBlacklist(allowed, disallowed));
 
                 return {
                     allowed,
@@ -652,11 +625,10 @@ export let Button : Component<ButtonOptions> = create({
                     flushLogs();
 
                     let redirect = (win, url) => {
-                        return ZalgoPromise.try(() => {
-                            return actions.close();
-                        }).then(() => {
-                            return redir(win || window.top, url || data.cancelUrl);
-                        });
+                        return ZalgoPromise.all([
+                            redir(win || window.top, url || data.cancelUrl),
+                            actions.close()
+                        ]);
                     };
 
                     return original.call(this, data, { ...actions, redirect });

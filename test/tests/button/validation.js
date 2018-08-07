@@ -716,6 +716,27 @@ let buttonConfigs = [
 
             {
                 layout: `vertical`,
+                label:  `p24`,
+                commit: true,
+                valid:  false
+            },
+
+            {
+                layout: `vertical`,
+                label:  `zimpler`,
+                commit: true,
+                valid:  false
+            },
+
+            {
+                layout: `vertical`,
+                label:  `wechatpay`,
+                commit: true,
+                valid:  false
+            },
+
+            {
+                layout: `vertical`,
                 label:  `card`,
                 valid:  false
             }
@@ -1529,7 +1550,6 @@ let buttonConfigs = [
                 }
             },
 
-            /*
             {
                 desc: `opt-in to ideal`,
 
@@ -1561,7 +1581,6 @@ let buttonConfigs = [
                     }
                 }
             },
-            */
 
             {
                 desc: `opt-in to elv`,
